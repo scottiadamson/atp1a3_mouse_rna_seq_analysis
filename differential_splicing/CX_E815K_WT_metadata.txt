@@ -1,0 +1,8 @@
+350_550_CX_junctions.out WT F
+325_430_CX_junctions.out WT F
+350_561_CX_junctions.out WT M
+325_434_CX_junctions.out WT M
+350_555_CX_junctions.out E815K F
+350_556_CX_junctions.out E815K F
+350_558_CX_junctions.out E815K M
+350_557_CX_junctions.out E815K M

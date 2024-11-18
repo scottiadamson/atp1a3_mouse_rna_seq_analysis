@@ -1,0 +1,8 @@
+325_430_HP_junctions.out WT F
+350_550_HP_junctions.out WT F
+350_561_HP_junctions.out WT M
+325_434_HP_junctions.out WT M
+325_439_HP_junctions.out D801N F
+325_440_HP_junctions.out D801N F
+325_442_HP_junctions.out D801N M
+325_436_HP_junctions.out D801N M

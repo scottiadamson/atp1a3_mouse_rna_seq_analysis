@@ -1,0 +1,8 @@
+325_430_BS_junctions.out WT F
+350_550_BS_junctions.out WT F
+325_434_BS_junctions.out WT M
+350_561_BS_junctions.out WT M
+325_440_BS_junctions.out D801N F
+325_439_BS_junctions.out D801N F
+325_436_BS_junctions.out D801N M
+325_442_BS_junctions.out D801N M

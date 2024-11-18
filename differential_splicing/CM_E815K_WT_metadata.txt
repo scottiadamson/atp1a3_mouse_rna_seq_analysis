@@ -1,0 +1,8 @@
+350_550_CM_junctions.out WT F
+325_430_CM_junctions.out WT F
+350_561_CM_junctions.out WT M
+325_434_CM_junctions.out WT M
+350_555_CM_junctions.out E815K F
+350_556_CM_junctions.out E815K F
+350_557_CM_junctions.out E815K M
+350_558_CM_junctions.out E815K M

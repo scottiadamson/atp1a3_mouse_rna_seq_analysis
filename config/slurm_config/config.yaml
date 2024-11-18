@@ -1,0 +1,16 @@
+cluster:
+  mkdir -p logs/{rule} &&
+  sbatch
+    --partition={resources.partition}
+    --cpus-per-task={threads}
+    --mem={resources.mem}
+    --job-name=JAX_Atp1a3_RNA_seq_{rule}_{wildcards}
+    --output=logs/{rule}/JAX_Atp1a3_RNA_seq_{rule}_{wildcards}_%j.out
+    --nodes=1
+    --ntasks=1
+default-resources: [partition=pe2, mem=5000, time=120]
+
+latency-wait: 120
+max-jobs-per-second: 10
+jobs: 10
+

@@ -1,0 +1,8 @@
+samples: ['325_430_BS',  '325_430_CM', '325_430_HP', '325_430_CX', '325_434_BS', '325_434_CM', '325_434_HP', '325_434_CX', '325_436_BS', '325_436_CM', '325_436_HP', '325_436_CX', '325_439_BS', '325_439_CM', '325_439_HP', '325_439_CX', '325_440_BS', '325_440_CM', '325_440_HP', '325_440_CX', '325_442_BS', '325_442_CM', '325_442_HP', '325_442_CX', '350_550_BS', '350_550_CM', '350_550_HP', '350_550_CX', '350_555_BS', '350_555_CM', '350_555_HP', '350_555_CX', '350_556_BS', '350_556_CM', '350_556_HP', '350_556_CX', '350_557_BS', '350_557_CM', '350_557_HP', '350_557_CX', '350_558_BS', '350_558_CM', '350_558_HP', '350_558_CX', '350_561_BS', '350_561_CM', '350_561_HP', '350_561_CX']
+
+
+fastq_dir: '/gpfs/commons/groups/knowles_lab/sadamson/JAX_Atp1a3_project/fastq'
+star_index: '/gpfs/commons/groups/knowles_lab/sadamson/JAX_Atp1a3_project/references/star_index'
+fasta_file: '/gpfs/commons/groups/knowles_lab/sadamson/JAX_Atp1a3_project/references/GRCm39.primary_assembly.genome.fa'
+splicing_workflow: False
+
