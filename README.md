@@ -1,5 +1,5 @@
-#This github repo has the code to analyze RNA-seq from the following paper:  
-#M. Terrey et al., (2024) Alternating hemiplegia of childhood associated mutations in *Atp1a3* reveal diverse neurological alterations in mice. Manuscript in preparation. 
+# This github repo has the code to analyze RNA-seq from the following paper:  
+# M. Terrey et al., (2024) Alternating hemiplegia of childhood associated mutations in *Atp1a3* reveal diverse neurological alterations in mice. Manuscript in preparation.  
 Note that there is some differential splicing analysis in this repo which is not part of the publication currently.
  
 In order to reproduce this analysis first clone this repo:  
@@ -19,7 +19,8 @@ For RNA-seq analysis, install R version 4.3.3 and the following dependencies wit
 install.packages('tidyverse', 'cowplot', 'UpSetR', 'BiocManager')
 ```
 Then install other R dependencies with BiocManager:
-```BiocManager::install('DESeq2')
+```
+BiocManager::install('DESeq2')
 BiocManager::install('tximport')
 BiocManager::install('EnhancedVolcano')
 ```
@@ -52,8 +53,10 @@ After this has run successfully perform the differential expression analysis:
 cd differential_expression
 Rscript DESeq.R
 ```
-If performing differential splicing analysis, first set "splicing_workflow" in the config file to True. 
-Then install [http://davidaknowles.github.io/leafcutter/](leafcutter). 
+If performing differential splicing analysis, first set "splicing_workflow" in the config file to True.  
+
+Then install [http://davidaknowles.github.io/leafcutter/](leafcutter).  
+
 Then change the paths in the leafcutter.sh file and run differential splicing analysis:
 ```
 cd differential_splicing
