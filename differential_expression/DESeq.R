@@ -15,6 +15,7 @@ add_gene_names <- function(res_df, transcript_info, gene_biotypes){
 }
 
 #to load the workspace
+#change this directory to wherever the kallisto_out folder is on your computer
 base_dir <- '/gpfs/commons/groups/knowles_lab/sadamson/JAX_Atp1a3_project/'
 #load(paste0(base_dir, 'differential_expression/DEseq2.RData'))
 
@@ -61,17 +62,17 @@ dds <- DESeqDataSetFromTximport(txi,
                                colData = colData,
                                design = ~ Genotype + Tissue + Sex)
 
-#output for GEO here
-sample_nickname_tib <- read_tsv(paste0(base_dir, 'sample_nicknames.tsv'))
-nicknames <- sample_nickname_tib$nickname
-names(nicknames) <- sample_nickname_tib$original_name
-gene_counts <- as.data.frame(counts(dds))
-colnames(gene_counts) <- nicknames[colnames(gene_counts)]
-original_cols <- colnames(gene_counts)
-gene_counts$gene_id <- rownames(gene_counts)
-gene_counts$gene_name <- gene_id2gene_list[gene_counts$gene_id]
-gene_counts <- gene_counts[,c('gene_id', 'gene_name', original_cols)]
-as_tibble(gene_counts) %>% write_tsv(paste0(base_dir, 'for_GEO/Gene_counts.tsv'))
+##output for GEO here
+#sample_nickname_tib <- read_tsv(paste0(base_dir, 'sample_nicknames.tsv'))
+#nicknames <- sample_nickname_tib$nickname
+#names(nicknames) <- sample_nickname_tib$original_name
+#gene_counts <- as.data.frame(counts(dds))
+#colnames(gene_counts) <- nicknames[colnames(gene_counts)]
+#original_cols <- colnames(gene_counts)
+#gene_counts$gene_id <- rownames(gene_counts)
+#gene_counts$gene_name <- gene_id2gene_list[gene_counts$gene_id]
+#gene_counts <- gene_counts[,c('gene_id', 'gene_name', original_cols)]
+#as_tibble(gene_counts) %>% write_tsv(paste0(base_dir, 'for_GEO/Gene_counts.tsv'))
 
 #PCA of all RNA-seq samples
 PCA_df_prep <- function(deseq_object, metatdata_df){
@@ -106,10 +107,11 @@ ggplot(PCA_plot_df, aes(x = PC1, y = PC2, color = Genotype, shape = factor(Tissu
        y = paste0("PC2:   ", round(var_explained_df[2,'percent_variance_explained'],2), '% variance explained'),
        color = "Genotype", shape = 'Tissue')
 
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'all_sample_PCA.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'all_sample_PCA.pdf'), width = 8, height = 6)
+plot_dir <- '/gpfs/commons/groups/knowles_lab/sadamson/JAX_Atp1a3_project/github_repo/atp1a3_mouse_rna_seq_analysis/differential_expression/plots/'
+ggsave(paste0(plot_dir, 'QC_plots/', 'all_sample_PCA.svg'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'all_sample_PCA.pdf'), width = 8, height = 6)
 
-##Analyze Brainstem
+#Analyze Brainstem
 BS_samples <- pull(metadata_df %>% filter(Tissue == 'Brainstem') %>% dplyr::select(Sample))
 BS_files <- file.path(base_dir, "kallisto_out/", BS_samples, "abundance.h5")
 BS_txi <- tximport(BS_files, type = "kallisto", tx2gene = tx2gene, dropInfReps = TRUE, lengthCol = 'transcript_length')
@@ -132,12 +134,12 @@ ggplot(BS_PCA_plot_df, aes(x = PC1, y = PC2, label = sample, color = Genotype, s
  labs(x = paste0("PC1:   ", round(BS_var_explained_df[1,'percent_variance_explained'],2), '% variance explained'),
       y = paste0("PC2:   ", round(BS_var_explained_df[2,'percent_variance_explained'],2), '% variance explained'),
       color = "Molecular model", shape = 'Sex')
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'BS_PCA.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'BS_PCA.pdf'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'BS_PCA.svg'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'BS_PCA.pdf'), width = 8, height = 6)
 
 BS_D801N_WT_res <- lfcShrink(BS_dds, contrast = c('Genotype', 'D801N', 'WT'), type = 'ashr')
 BS_D801N_WT_res <- add_gene_names(BS_D801N_WT_res, transcript_info)
-write_tsv(BS_D801N_WT_res, paste0(base_dir, 'differential_expression/', 'BS_D801N_vs_WT.tsv'))
+#write_tsv(BS_D801N_WT_res, paste0(base_dir, 'differential_expression/', 'BS_D801N_vs_WT.tsv'))
 
 EnhancedVolcano(BS_D801N_WT_res,
                 lab = BS_D801N_WT_res$gene_name,
@@ -146,16 +148,16 @@ EnhancedVolcano(BS_D801N_WT_res,
                 pCutoff = 0.05,
                 FCcutoff = 0.5,
                 title = 'Brainstem D801N vs WT')
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'BS_D801N_vs_WT_volcano_plot.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'BS_D801N_vs_WT_volcano_plot.pdf'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'BS_D801N_vs_WT_volcano_plot.svg'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'BS_D801N_vs_WT_volcano_plot.pdf'), width = 8, height = 6)
 
 ggplot(BS_D801N_WT_res, aes(pvalue)) + geom_histogram(bins = 25) + theme_bw()
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'BS_D801N_vs_WT_pvalue_histogram.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'BS_D801N_vs_WT_pvalue_histogram.pdf'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'BS_D801N_vs_WT_pvalue_histogram.svg'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'BS_D801N_vs_WT_pvalue_histogram.pdf'), width = 8, height = 6)
 
 BS_E815K_WT_res <- lfcShrink(BS_dds, contrast = c('Genotype', 'E815K', 'WT'), type = 'ashr')
 BS_E815K_WT_res <- add_gene_names(BS_E815K_WT_res, transcript_info)
-write_tsv(BS_E815K_WT_res, paste0(base_dir, 'differential_expression/', 'BS_E815K_vs_WT.tsv'))
+#write_tsv(BS_E815K_WT_res, paste0(base_dir, 'differential_expression/', 'BS_E815K_vs_WT.tsv'))
 
 EnhancedVolcano(BS_E815K_WT_res,
                 lab = BS_E815K_WT_res$gene_name,
@@ -164,31 +166,12 @@ EnhancedVolcano(BS_E815K_WT_res,
                 pCutoff = 0.05,
                 FCcutoff = 1,
                 title = 'Brainstem E815K vs WT')
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'BS_E815K_vs_WT_volcano_plot.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'BS_E815K_vs_WT_volcano_plot.pdf'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'BS_E815K_vs_WT_volcano_plot.svg'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'BS_E815K_vs_WT_volcano_plot.pdf'), width = 8, height = 6)
 
 ggplot(BS_E815K_WT_res, aes(pvalue)) + geom_histogram(bins = 25) + theme_bw()
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'BS_E815K_vs_WT_pvalue_histogram.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'BS_E815K_vs_WT_pvalue_histogram.pdf'), width = 8, height = 6)
-
-BS_D801N_E815K_res <- lfcShrink(BS_dds, contrast = c('Genotype', 'D801N', 'E815K'), type = 'ashr')
-BS_D801N_E815K_res <- add_gene_names(BS_D801N_E815K_res, transcript_info)
-write_tsv(BS_D801N_E815K_res, paste0(base_dir, 'differential_expression/', 'BS_D801N_vs_E815K.tsv'))
-
-EnhancedVolcano(BS_D801N_E815K_res,
-                lab = BS_D801N_E815K_res$gene_name,
-                x = 'log2FoldChange',
-                y = 'padj',
-                pCutoff = 0.05,
-                FCcutoff = 1,
-                title = 'Brainstem D801N vs E815K')
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'BS_D801N_vs_E815K_volcano_plot.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'BS_D801N_vs_E815K_volcano_plot.pdf'), width = 8, height = 6)
-
-ggplot(BS_D801N_E815K_res, aes(pvalue)) + geom_histogram(bins = 25) + theme_bw()
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'BS_D801N_vs_E815K_pvalue_histogram.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'BS_D801N_vs_E815K_pvalue_histogram.pdf'), width = 8, height = 6)
-
+ggsave(paste0(plot_dir, 'QC_plots/', 'BS_E815K_vs_WT_pvalue_histogram.svg'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'BS_E815K_vs_WT_pvalue_histogram.pdf'), width = 8, height = 6)
 
 ##Analyze Cerebellum
 CM_samples <- pull(metadata_df %>% filter(Tissue == 'Cerebellum') %>% dplyr::select(Sample))
@@ -228,16 +211,16 @@ EnhancedVolcano(CM_D801N_WT_res,
                 pCutoff = 0.05,
                 FCcutoff = 1,
                 title = 'Cerebellum D801N vs WT')
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CM_D801N_vs_WT_volcano_plot.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CM_D801N_vs_WT_volcano_plot.pdf'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'CM_D801N_vs_WT_volcano_plot.svg'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'CM_D801N_vs_WT_volcano_plot.pdf'), width = 8, height = 6)
 
 ggplot(CM_D801N_WT_res, aes(pvalue)) + geom_histogram(bins = 25) + theme_bw()
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CM_D801N_vs_WT_pvalue_histogram.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CM_D801N_vs_WT_pvalue_histogram.pdf'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'CM_D801N_vs_WT_pvalue_histogram.svg'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'CM_D801N_vs_WT_pvalue_histogram.pdf'), width = 8, height = 6)
 
 CM_E815K_WT_res <- lfcShrink(CM_dds, contrast = c('Genotype', 'E815K', 'WT'), type = 'ashr')
 CM_E815K_WT_res <- add_gene_names(CM_E815K_WT_res, transcript_info)
-write_tsv(CM_E815K_WT_res, paste0(base_dir, 'differential_expression/', 'CM_E815K_vs_WT.tsv'))
+#write_tsv(CM_E815K_WT_res, paste0(base_dir, 'differential_expression/', 'CM_E815K_vs_WT.tsv'))
 
 EnhancedVolcano(CM_E815K_WT_res,
                 lab = CM_E815K_WT_res$gene_name,
@@ -246,31 +229,12 @@ EnhancedVolcano(CM_E815K_WT_res,
                 pCutoff = 0.05,
                 FCcutoff = 1,
                 title = 'Cerebellum E815K vs WT')
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CM_E815K_vs_WT_volcano_plot.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CM_E815K_vs_WT_volcano_plot.pdf'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'CM_E815K_vs_WT_volcano_plot.svg'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'CM_E815K_vs_WT_volcano_plot.pdf'), width = 8, height = 6)
 
 ggplot(CM_E815K_WT_res, aes(pvalue)) + geom_histogram(bins = 25) + theme_bw()
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CM_E815K_vs_WT_pvalue_histogram.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CM_E815K_vs_WT_pvalue_histogram.pdf'), width = 8, height = 6)
-
-CM_D801N_E815K_res <- lfcShrink(CM_dds, contrast = c('Genotype', 'D801N', 'E815K'), type = 'ashr')
-CM_D801N_E815K_res <- add_gene_names(CM_D801N_E815K_res, transcript_info)
-write_tsv(CM_D801N_E815K_res, paste0(base_dir, 'differential_expression/', 'CM_D801N_vs_E815K.tsv'))
-
-EnhancedVolcano(CM_D801N_E815K_res,
-                lab = CM_D801N_E815K_res$gene_name,
-                x = 'log2FoldChange',
-                y = 'padj',
-                pCutoff = 0.05,
-                FCcutoff = 1,
-                title = 'Cerebellum D801N vs E815K')
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CM_D801N_vs_E815K_volcano_plot.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CM_D801N_vs_E815K_volcano_plot.pdf'), width = 8, height = 6)
-
-ggplot(CM_D801N_E815K_res, aes(pvalue)) + geom_histogram(bins = 25) + theme_bw()
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CM_D801N_vs_E815K_pvalue_histogram.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CM_D801N_vs_E815K_pvalue_histogram.pdf'), width = 8, height = 6)
-
+ggsave(paste0(plot_dir, 'QC_plots/', 'CM_E815K_vs_WT_pvalue_histogram.svg'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'CM_E815K_vs_WT_pvalue_histogram.pdf'), width = 8, height = 6)
 
 ##Analyze Cortex
 CX_samples <- pull(metadata_df %>% filter(Tissue == 'Cortex') %>% dplyr::select(Sample))
@@ -296,12 +260,12 @@ ggplot(CX_PCA_plot_df, aes(x = PC1, y = PC2, label = sample, color = Genotype, s
   labs(x = paste0("PC1:   ", round(CX_var_explained_df[1,'percent_variance_explained'],2), '% variance explained'),
        y = paste0("PC2:   ", round(CX_var_explained_df[2,'percent_variance_explained'],2), '% variance explained'),
        color = "Molecular model", shape = 'Sex')
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CX_PCA.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CX_PCA.pdf'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'CX_PCA.svg'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'CX_PCA.pdf'), width = 8, height = 6)
 
 CX_D801N_WT_res <- lfcShrink(CX_dds, contrast = c('Genotype', 'D801N', 'WT'), type = 'ashr')
 CX_D801N_WT_res <- add_gene_names(CX_D801N_WT_res, transcript_info)
-write_tsv(CX_D801N_WT_res, paste0(base_dir, 'differential_expression/', 'CX_D801N_vs_WT.tsv'))
+#write_tsv(CX_D801N_WT_res, paste0(base_dir, 'differential_expression/', 'CX_D801N_vs_WT.tsv'))
 
 EnhancedVolcano(CX_D801N_WT_res,
                 lab = CX_D801N_WT_res$gene_name,
@@ -310,16 +274,16 @@ EnhancedVolcano(CX_D801N_WT_res,
                 pCutoff = 0.05,
                 FCcutoff = 0.5,
                 title = 'Cortex D801N vs WT')
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CX_D801N_vs_WT_volcano_plot.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CX_D801N_vs_WT_volcano_plot.pdf'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'CX_D801N_vs_WT_volcano_plot.svg'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'CX_D801N_vs_WT_volcano_plot.pdf'), width = 8, height = 6)
 
 ggplot(CX_D801N_WT_res, aes(pvalue)) + geom_histogram(bins = 25) + theme_bw()
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CX_D801N_vs_WT_pvalue_histogram.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CX_D801N_vs_WT_pvalue_histogram.pdf'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'CX_D801N_vs_WT_pvalue_histogram.svg'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'CX_D801N_vs_WT_pvalue_histogram.pdf'), width = 8, height = 6)
 
 CX_E815K_WT_res <- lfcShrink(CX_dds, contrast = c('Genotype', 'E815K', 'WT'), type = 'ashr')
 CX_E815K_WT_res <- add_gene_names(CX_E815K_WT_res, transcript_info)
-write_tsv(CX_E815K_WT_res, paste0(base_dir, 'differential_expression/', 'CX_E815K_vs_WT.tsv'))
+#write_tsv(CX_E815K_WT_res, paste0(base_dir, 'differential_expression/', 'CX_E815K_vs_WT.tsv'))
 
 EnhancedVolcano(CX_E815K_WT_res,
                 lab = CX_E815K_WT_res$gene_name,
@@ -328,31 +292,12 @@ EnhancedVolcano(CX_E815K_WT_res,
                 pCutoff = 0.05,
                 FCcutoff = 0.5,
                 title = 'Cortex E815K vs WT')
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CX_E815K_vs_WT_volcano_plot.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CX_E815K_vs_WT_volcano_plot.pdf'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'CX_E815K_vs_WT_volcano_plot.svg'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'CX_E815K_vs_WT_volcano_plot.pdf'), width = 8, height = 6)
 
 ggplot(CX_E815K_WT_res, aes(pvalue)) + geom_histogram(bins = 25) + theme_bw()
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CX_E815K_vs_WT_pvalue_histogram.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CX_E815K_vs_WT_pvalue_histogram.pdf'), width = 8, height = 6)
-
-CX_D801N_E815K_res <- lfcShrink(CX_dds, contrast = c('Genotype', 'D801N', 'E815K'), type = 'ashr')
-CX_D801N_E815K_res <- add_gene_names(CX_D801N_E815K_res, transcript_info)
-write_tsv(CX_D801N_E815K_res, paste0(base_dir, 'differential_expression/', 'CX_D801N_vs_E815K.tsv'))
-
-EnhancedVolcano(CX_D801N_E815K_res,
-                lab = CX_D801N_E815K_res$gene_name,
-                x = 'log2FoldChange',
-                y = 'padj',
-                pCutoff = 0.05,
-                FCcutoff = 0.5,
-                title = 'Cortex D801N vs E815K')
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CX_D801N_vs_E815K_volcano_plot.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CX_D801N_vs_E815K_volcano_plot.pdf'), width = 8, height = 6)
-
-ggplot(CX_D801N_E815K_res, aes(pvalue)) + geom_histogram(bins = 25) + theme_bw()
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CX_D801N_vs_E815K_pvalue_histogram.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'CX_D801N_vs_E815K_pvalue_histogram.pdf'), width = 8, height = 6)
-
+ggsave(paste0(plot_dir, 'QC_plots/', 'CX_E815K_vs_WT_pvalue_histogram.svg'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'CX_E815K_vs_WT_pvalue_histogram.pdf'), width = 8, height = 6)
 
 ##Analyze Hippocampus
 HP_samples <- pull(metadata_df %>% filter(Tissue == 'Hippocampus') %>% dplyr::select(Sample))
@@ -366,7 +311,6 @@ HP_dds <- DESeqDataSetFromTximport(HP_txi,
 HP_dds_expressed <- rowSums(counts(HP_dds)>=1) >= 0.5 * nrow(HP_colData)
 HP_dds <- HP_dds[HP_dds_expressed,]
 HP_dds <- DESeq(HP_dds, fitType='local')
-plotDispEsts(HP_dds)
 
 HP_PCA_stuff <- PCA_df_prep(HP_dds, metatdata_df)
 HP_var_explained_df <- HP_PCA_stuff$var_explained_df
@@ -378,12 +322,12 @@ ggplot(HP_PCA_plot_df, aes(x = PC1, y = PC2, label = sample, color = Genotype, s
   labs(x = paste0("PC1:   ", round(HP_var_explained_df[1,'percent_variance_explained'],2), '% variance explained'),
        y = paste0("PC2:   ", round(HP_var_explained_df[2,'percent_variance_explained'],2), '% variance explained'),
        color = "Molecular model", shape = 'Sex')
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'HP_PCA.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'HP_PCA.pdf'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'HP_PCA.svg'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'HP_PCA.pdf'), width = 8, height = 6)
 
 HP_D801N_WT_res <- lfcShrink(HP_dds, contrast = c('Genotype', 'D801N', 'WT'), type = 'ashr')
 HP_D801N_WT_res <- add_gene_names(HP_D801N_WT_res, transcript_info)
-write_tsv(HP_D801N_WT_res, paste0(base_dir, 'differential_expression/', 'HP_D801N_vs_WT.tsv'))
+#write_tsv(HP_D801N_WT_res, paste0(base_dir, 'differential_expression/', 'HP_D801N_vs_WT.tsv'))
 
 EnhancedVolcano(HP_D801N_WT_res,
                 lab = HP_D801N_WT_res$gene_name,
@@ -392,16 +336,16 @@ EnhancedVolcano(HP_D801N_WT_res,
                 pCutoff = 0.05,
                 FCcutoff = 0.5,
                 title = 'Hippocampus D801N vs WT')
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'HP_D801N_vs_WT_volcano_plot.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'HP_D801N_vs_WT_volcano_plot.pdf'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'HP_D801N_vs_WT_volcano_plot.svg'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'HP_D801N_vs_WT_volcano_plot.pdf'), width = 8, height = 6)
 
 ggplot(HP_D801N_WT_res, aes(pvalue)) + geom_histogram(bins = 25) + theme_bw()
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'HP_D801N_vs_WT_pvalue_histogram.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'HP_D801N_vs_WT_pvalue_histogram.pdf'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'HP_D801N_vs_WT_pvalue_histogram.svg'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'HP_D801N_vs_WT_pvalue_histogram.pdf'), width = 8, height = 6)
 
 HP_E815K_WT_res <- lfcShrink(HP_dds, contrast = c('Genotype', 'E815K', 'WT'), type = 'ashr')
 HP_E815K_WT_res <- add_gene_names(HP_E815K_WT_res, transcript_info)
-write_tsv(HP_E815K_WT_res, paste0(base_dir, 'differential_expression/', 'HP_E815K_vs_WT.tsv'))
+#write_tsv(HP_E815K_WT_res, paste0(base_dir, 'differential_expression/', 'HP_E815K_vs_WT.tsv'))
 
 EnhancedVolcano(HP_E815K_WT_res,
                 lab = HP_E815K_WT_res$gene_name,
@@ -410,76 +354,13 @@ EnhancedVolcano(HP_E815K_WT_res,
                 pCutoff = 0.05,
                 FCcutoff = 0.5,
                 title = 'Hippocampus E815K vs WT')
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'HP_E815K_vs_WT_volcano_plot.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'HP_E815K_vs_WT_volcano_plot.pdf'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'HP_E815K_vs_WT_volcano_plot.svg'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'HP_E815K_vs_WT_volcano_plot.pdf'), width = 8, height = 6)
 
 ggplot(HP_E815K_WT_res, aes(pvalue)) + geom_histogram(bins = 25) + theme_bw()
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'HP_E815K_vs_WT_pvalue_histogram.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'HP_E815K_vs_WT_pvalue_histogram.pdf'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'HP_E815K_vs_WT_pvalue_histogram.svg'), width = 8, height = 6)
+ggsave(paste0(plot_dir, 'QC_plots/', 'HP_E815K_vs_WT_pvalue_histogram.pdf'), width = 8, height = 6)
 
-HP_D801N_E815K_res <- lfcShrink(HP_dds, contrast = c('Genotype', 'D801N', 'E815K'), type = 'ashr')
-HP_D801N_E815K_res <- add_gene_names(HP_D801N_E815K_res, transcript_info)
-write_tsv(HP_D801N_E815K_res, paste0(base_dir, 'differential_expression/', 'HP_D801N_vs_E815K.tsv'))
+out_dir <- '/gpfs/commons/groups/knowles_lab/sadamson/JAX_Atp1a3_project/github_repo/atp1a3_mouse_rna_seq_analysis/differential_expression/'
+save.image(paste0(out_dir, 'DEseq2.RData'))
 
-EnhancedVolcano(HP_D801N_E815K_res,
-                lab = HP_D801N_E815K_res$gene_name,
-                x = 'log2FoldChange',
-                y = 'padj',
-                pCutoff = 0.05,
-                FCcutoff = 0.5,
-                title = 'Hippocampus D801N vs E815K')
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'HP_D801N_vs_E815K_volcano_plot.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'HP_D801N_vs_E815K_volcano_plot.pdf'), width = 8, height = 6)
-
-ggplot(HP_D801N_E815K_res, aes(pvalue)) + geom_histogram(bins = 25) + theme_bw()
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'HP_D801N_vs_E815K_pvalue_histogram.svg'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'HP_D801N_vs_E815K_pvalue_histogram.pdf'), width = 8, height = 6)
-
-
-#make a matrix of DE genes in each comparison
-all_comps <- list(BS_D801N_WT_res, CM_D801N_WT_res, CX_D801N_WT_res, HP_D801N_WT_res,
-               BS_E815K_WT_res, CM_E815K_WT_res, CX_E815K_WT_res, HP_E815K_WT_res,
-               BS_D801N_E815K_res, CM_D801N_E815K_res, CX_D801N_E815K_res, HP_D801N_E815K_res)
-extract_DE_genes <- function(df){
-  DE_genes <- df[df[,'padj'] <= 0.05, 'gene_id']
-  DE_genes <- DE_genes[is.na(DE_genes) == FALSE]
-  return(DE_genes)
-}
-
-DE_lookup <- function(df, gene_list){
-  rownames(df) <- df[,'gene_id']
-  df <- df[gene_list,]
-  is_sig <- df[,'padj'] <= 0.05
-  return(is_sig)
-}
-
-DE_genes <- unique(unlist(lapply(all_comps, extract_DE_genes)))
-DE_sig <- lapply(all_comps, DE_lookup, gene_list = DE_genes)
-comp_vector <- c('Brainstem_D801N_vs_WT', 'Cerebellum_D801N_vs_WT', 'Cortex_D801N_vs_WT', 'Hippocampus_D801N_vs_WT',
-                 'Brainstem_E815K_vs_WT', 'Cerebellum_E815K_vs_WT', 'Cortex_E815K_vs_WT', 'Hippocampus_E815K_vs_WT',
-                 'Brainstem_D801N_vs_E815K', 'Cerebellum_D801N_vs_E815K', 'Cortex_D801N_vs_E815K', 'Hippocampus_D801N_vs_E815K')
-sig_df <- as.data.frame(DE_sig, row.names = DE_genes, col.names = comp_vector)
-sig_df[is.na(sig_df)] <- FALSE
-sig_df <- 1*sig_df
-
-pdf(file = paste0(base_dir, 'differential_expression/plots/', 'DE_gene_upset_plot.pdf'), width = 8, height = 6, onefile = FALSE)
-upset(sig_df, nsets = 12, order.by = "freq")
-dev.off()
-
-pdf(file = paste0(base_dir, 'differential_expression/plots/', 'DE_gene_upset_plot_WT_comps.pdf'), width = 8, height = 6, onefile = FALSE)
-upset(sig_df[,colnames(sig_df)[grepl("_WT", colnames(sig_df))]], nsets = 9, order.by = "freq")
-dev.off()
-
-DE_gene_count <- as.data.frame(colSums(sig_df))
-DE_gene_count$comparison <- rownames(DE_gene_count)
-colnames(DE_gene_count) <- c('n_DE_genes', 'comparison')
-ggplot(DE_gene_count %>%
-         mutate(comparison = fct_reorder(comparison, desc(n_DE_genes)))) +
-  geom_bar(aes(x=comparison, y = n_DE_genes), stat = 'identity') +
-  theme(axis.text.x = element_text(angle = 45, hjust=1),
-        plot.margin=margin(0, 0, 0, 1, "cm")) +
-  ylab('Number of differentially expressed genes')
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'DE_gene_histogram.pdf'), width = 8, height = 6)
-ggsave(paste0(base_dir, 'differential_expression/plots/', 'DE_gene_histogram.svg'), width = 8, height = 6)
-
-save.image(paste0(base_dir, 'differential_expression/DEseq2.RData'))
