@@ -34,7 +34,7 @@ sig_df <- as.data.frame(DE_sig, row.names = DE_genes, col.names = comp_vector)
 sig_df[is.na(sig_df)] <- FALSE
 sig_df <- 1*sig_df
 
-pdf(file = paste0('plots/', 'Figure_4A_DE_gene_upset_plots.pdf'), width = 8, height = 6, onefile = FALSE)
+pdf(file = paste0('plots/publication_plots/', 'Figure_4A_DE_gene_upset_plots.pdf'), width = 8, height = 6, onefile = FALSE)
 upset(sig_df, nsets = 9, order.by = "freq")
 dev.off()
 
@@ -94,23 +94,29 @@ ggsave(paste0('plots/publication_plots/', "Supplemental_Figure_S6B_neuroinflamma
 ggsave(paste0('plots/publication_plots/', "Supplemental_Figure_S6B_neuroinflammation_volcano_CM_E815K_WT.svg"), width = 6.3, height = 6.3) 
 
 #boxplots of neuroinflammation genes
-p <- ggplot(data = CM_D801N_WT_res %>% filter(padj <=0.05), aes(x = Flam_gene, y = log2FoldChange)) 
+plot_tib <- CM_D801N_WT_res %>% mutate(sig_flam_gene = padj <=0.05 & Flam_gene == TRUE) %>% drop_na()
+
+p <- ggplot(data = plot_tib, aes(x = sig_flam_gene, y = log2FoldChange)) 
 p <- p + geom_boxplot()
 p <- p + ylim(-3.5, 6.5) + theme_bw()
 p
 ggsave(paste0('plots/publication_plots/', "Supplemental_Figure_S6C_neuroinflammation_volcano_CM_D801N_WT.pdf"), width = 6.3, height = 6.3) 
 ggsave(paste0('plots/publication_plots/', "Supplemental_Figure_S6C_neuroinflammation_volcano_CM_D801N_WT.svg"), width = 6.3, height = 6.3) 
 
-wilcox.test(log2FoldChange ~ Flam_gene, data = CM_D801N_WT_res, alternative = "less") # p-value < 2.2e-16
+wilcox.test(log2FoldChange ~ sig_flam_gene, data = plot_tib, alternative = "less") # p-value < 2.2e-16
 
-p <- ggplot(data = CM_E815K_WT_res %>% filter(padj <=0.05), aes(x = Flam_gene, y = log2FoldChange)) 
+
+
+plot_tib <- CM_E815K_WT_res %>% mutate(sig_flam_gene = padj <= 0.05 & Flam_gene == TRUE) %>% drop_na()
+
+p <- ggplot(data = plot_tib, aes(x = sig_flam_gene, y = log2FoldChange)) 
 p <- p + geom_boxplot()
 p <- p + ylim(-3.5, 6.5) +theme_bw()
 p
 ggsave(paste0('plots/publication_plots/', "Supplemental_Figure_S6C_neuroinflammation_volcano_CM_E815K_WT.pdf"), width = 6.3, height = 6.3) 
 ggsave(paste0('plots/publication_plots/', "Supplemental_Figure_S6C_neuroinflammation_volcano_CM_E815K_WT.svg"), width = 6.3, height = 6.3) 
 
-wilcox.test(log2FoldChange ~ Flam_gene, data = CM_E815K_WT_res, alternative = "less") #p-value < 2.2e-16
+wilcox.test(log2FoldChange ~ sig_flam_gene, data = plot_tib, alternative = "less") #p-value < 2.2e-16
 
 CM_E815K_neuroinflammation_lfc <- pull(CM_E815K_WT_res %>% filter(padj <=0.05, Flam_gene == TRUE) %>% dplyr::select(log2FoldChange))
 CM_D801N_neuroinflammation_lfc <- pull(CM_D801N_WT_res %>% filter(padj <=0.05, Flam_gene == TRUE) %>% dplyr::select(log2FoldChange))
@@ -121,30 +127,35 @@ BS_D801N_WT_res <- BS_D801N_WT_res %>%
     mutate(gene_name = toupper(gene_name)) %>%
     mutate(Flam_gene = gene_name %in% neuroinflammation_genes)
 
-p <- ggplot(data = BS_D801N_WT_res %>% filter(padj <=0.05), aes(x = Flam_gene, y = log2FoldChange)) 
+plot_tib <- BS_D801N_WT_res %>% mutate(sig_flam_gene = padj <=0.05 & Flam_gene == TRUE) %>% drop_na()
+
+p <- ggplot(data = plot_tib, aes(x = sig_flam_gene, y = log2FoldChange)) 
 p <- p + geom_boxplot()
 p <- p + ylim(-3.5, 6.5) + theme_bw()
 p
 ggsave(paste0('plots/publication_plots/', "Supplemental_Figure_S6D_neuroinflammation_volcano_BS_D801N_WT.pdf"), width = 6.3, height = 6.3) 
 ggsave(paste0('plots/publication_plots/', "Supplemental_Figure_S6D_neuroinflammation_volcano_BS_D801N_WT.svg"), width = 6.3, height = 6.3) 
 
-wilcox.test(log2FoldChange ~ Flam_gene, data = BS_D801N_WT_res %>% filter(padj <=0.05), alternative = "less") #p-value = 0.5249
+wilcox.test(log2FoldChange ~ sig_flam_gene, data = plot_tib, alternative = "less") #p-value = 0.5249
 
 BS_E815K_WT_res <- BS_E815K_WT_res %>% 
     mutate(gene_name = toupper(gene_name)) %>%
     mutate(Flam_gene = gene_name %in% neuroinflammation_genes)
 
-p <- ggplot(data = BS_E815K_WT_res %>% filter(padj <= 0.05), aes(x = Flam_gene, y = log2FoldChange)) 
+plot_tib <- BS_E815K_WT_res %>% mutate(sig_flam_gene = padj <= 0.05 & Flam_gene == TRUE) %>% drop_na()
+
+p <- ggplot(data = plot_tib, aes(x = sig_flam_gene, y = log2FoldChange)) 
 p <- p + geom_boxplot()
 p <- p + ylim(-3.5, 6.5) + theme_bw()
 p
 ggsave(paste0('plots/publication_plots/', "Supplemental_Figure_S6D_neuroinflammation_volcano_BS_E815K_WT.pdf"), width = 6.3, height = 6.3) 
 ggsave(paste0('plots/publication_plots/', "Supplemental_Figure_S6D_neuroinflammation_volcano_BS_E815K_WT.svg"), width = 6.3, height = 6.3) 
 
-wilcox.test(log2FoldChange ~ Flam_gene, data = BS_E815K_WT_res %>% filter(padj <=0.05), alternative = "less") # p-value = 4.872e-07
+wilcox.test(log2FoldChange ~ sig_flam_gene, data = plot_tib, alternative = "less") # p-value < 2.2e-16
 
 BS_E815K_neuroinflammation_lfc <- pull(BS_E815K_WT_res %>% filter(padj <= 0.05, Flam_gene == TRUE) %>% dplyr::select(log2FoldChange))
 BS_D801N_neuroinflammation_lfc <- pull(BS_D801N_WT_res %>% filter(padj <= 0.05, Flam_gene == TRUE) %>% dplyr::select(log2FoldChange))
 wilcox.test(BS_D801N_neuroinflammation_lfc, BS_E815K_neuroinflammation_lfc, alternative = "less") # p-value = 6.891e-07
+
 
 
